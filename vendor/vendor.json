@@ -1,0 +1,47 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"heroku": {
+		"install" : [ "./..." ],
+		"goVersion": "go1.8"
+	},
+	"package": [
+		{
+			"checksumSHA1": "NfQBkfSVHEmnR2OaORxdOXmhLcs=",
+			"path": "github.com/cenkalti/backoff",
+			"revision": "5d150e7eec023ce7a124856b37c68e54b4050ac7",
+			"revisionTime": "2017-03-29T03:22:34Z"
+		},
+		{
+			"checksumSHA1": "JDUzI4Ave6zlGBGlhGWYhMvi0Ro=",
+			"path": "github.com/dghubble/go-twitter/twitter",
+			"revision": "2bdbe500add529557f5c9670fe8c904b1b1f08aa",
+			"revisionTime": "2017-04-23T07:35:26Z"
+		},
+		{
+			"checksumSHA1": "yLfKa2rrb1kpNopWZtRTzI+PYdg=",
+			"path": "github.com/dghubble/oauth1",
+			"revision": "3c7784d12fed88888d612324ea6897f7dc30723e",
+			"revisionTime": "2017-02-19T19:42:38Z"
+		},
+		{
+			"checksumSHA1": "nd8R/vvAuXAtxUfdldWCggnrd5M=",
+			"path": "github.com/dghubble/sling",
+			"revision": "bbfb8293bd33a6baad33d718aacf66ef73a29f30",
+			"revisionTime": "2017-03-22T05:06:59Z"
+		},
+		{
+			"checksumSHA1": "p3IB18uJRs4dL2K5yx24MrLYE9A=",
+			"path": "github.com/google/go-querystring/query",
+			"revision": "53e6ce116135b80d037921a7fdd5138cf32d7a8a",
+			"revisionTime": "2017-01-11T10:11:55Z"
+		},
+		{
+			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
+			"path": "golang.org/x/net/context",
+			"revision": "84f0e6f92b10139f986b1756e149a7d9de270cdc",
+			"revisionTime": "2017-05-12T21:27:43Z"
+		}
+	],
+	"rootPath": "github.com/brendanjryan/tweetstories"
+}

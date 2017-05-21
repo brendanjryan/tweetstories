@@ -1,0 +1,23 @@
+{
+  "name": "Tweetstories",
+  "description": "A twitter bot which deletes your tweets which are over 24hrs old.",
+  "repository": "https://github.com/brendanjryan/tweetstories",
+  "keywords": ["golang", "twitter"],
+  "env": {
+    "TWITTER_CONSUMER_KEY"  : {
+      "description": "Your twitter consumer key"
+    },
+    "TWITTER_CONSUMER_SECRET" : {
+      "description": "Your twitter consumer secret"
+    },
+    "TWITTER_ACCESS_TOKEN": {
+      "description": "Your twitter access token"
+    },
+    "TWITTER_ACCESS_SECRET": {
+      "description": "Your twitter access secret"
+    },
+    "HEROKU_NAME": {
+      "description": "the name of your heroku app"
+    }
+  }
+}
