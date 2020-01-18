@@ -98,7 +98,7 @@ func (s *Server) ping() {
 // delete deletes all tweets which are over a day old
 func (s *Server) delete() error {
 	for id, t := range s.tweets {
-		if time.Since(getTime(t)).Seconds() > float64(86400) { // 1 day
+		if time.Since(getTime(t)).Seconds() > float64(86400*7) { // 1 week
 			s.Logger().Printf("Deleting %#v", t)
 			_, _, err := s.Twitter().Statuses.Destroy(t.ID, &twitter.StatusDestroyParams{})
 			if err != nil {
