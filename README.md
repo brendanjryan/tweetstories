@@ -2,7 +2,7 @@
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 A small twitter bot designed to continuously delete all of an account's
-tweets which are older than 24 hours.
+tweets which are older than one week.
 
 This application was designed to run indefinitely on Heroku's "free" teir
 and will keep itsself alive via a small http server which pings itsself.
