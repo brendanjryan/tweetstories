@@ -15,14 +15,17 @@ import (
 // Server is the main app server.
 type Server struct {
 	config.IFace
-	http   *http.Server
-	tweets map[int64]twitter.Tweet // map of id => tweet
+	http *http.Server
+
+	// map of id => tweet
+	tweets map[int64]twitter.Tweet
 }
 
 // New instantiates an instance of Server
 func New() *Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", ack)
+	mux.HandleFunc("/health", ack)
 
 	cfg := config.New()
 
@@ -40,7 +43,6 @@ func New() *Server {
 // Run runs the server process. It can be killed by sending a SIGTERM
 // or any other interrupt signal.
 func (s *Server) Run() error {
-	s.Logger().Println("running server")
 	min := time.Tick(1 * time.Minute)
 	hour := time.Tick(1 * time.Hour)
 
@@ -58,6 +60,7 @@ func (s *Server) Run() error {
 		select {
 		case <-min:
 			go s.ping()
+			// TODO - handle retweets
 			s.delete()
 		case <-hour:
 			s.fetch()
@@ -73,7 +76,7 @@ func (s *Server) Run() error {
 func (s *Server) fetch() error {
 	ts, _, err := s.Twitter().Timelines.UserTimeline(&twitter.UserTimelineParams{})
 	if err != nil {
-		s.Logger().Println(err)
+		s.Logger().Println("error fetching tweets: ", err)
 		return err
 	}
 
@@ -81,7 +84,7 @@ func (s *Server) fetch() error {
 		s.tweets[t.ID] = t
 	}
 
-	s.Logger().Printf("Fetched Tweets: %#v", s.tweets)
+	s.Logger().Printf("fetched Tweets: (%i) %#v", len(s.tweets), s.tweets)
 
 	return nil
 }
@@ -91,31 +94,36 @@ func (s *Server) fetch() error {
 func (s *Server) ping() {
 	_, err := http.Get(fmt.Sprintf("http://%s.herokuapp.com/", s.Name()))
 	if err != nil {
-		s.Logger().Println(err)
+		s.Logger().Println("error pinging app", err)
 	}
 }
 
 // delete deletes all tweets which are over a day old
 func (s *Server) delete() error {
 	for id, t := range s.tweets {
-		if time.Since(getTime(t)).Seconds() > float64(86400*7) { // 1 week
-			s.Logger().Printf("Deleting %#v", t)
-			_, _, err := s.Twitter().Statuses.Destroy(t.ID, &twitter.StatusDestroyParams{})
-			if err != nil {
-				// print error and continue
-				fmt.Println(err)
-				continue
-			}
 
-			delete(s.tweets, id)
+		if time.Since(getTime(t)).Seconds() < float64(86400*365) { // 1 week
+			// tweet is not old enough -- moving to next tweet.
+			continue
 		}
+
+		s.Logger().Printf("Deleting %#v", t)
+		_, _, err := s.Twitter().Statuses.Destroy(t.ID, &twitter.StatusDestroyParams{})
+		if err != nil {
+			fmt.Println("error deleting tweet:", err)
+			continue
+		}
+
+		// remove tweet from map
+		delete(s.tweets, id)
 	}
 
 	return nil
 }
 
 func ack(w http.ResponseWriter, r *http.Request) {
-	// do nothing
+	w.Write([]byte("ack"))
+	return
 }
 
 func getTime(t twitter.Tweet) time.Time {
