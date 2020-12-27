@@ -1,7 +1,7 @@
 deafult: build
 
 vet:
-	go tool vet .
+	go vet .
 
 build:
 	go build
