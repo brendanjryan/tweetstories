@@ -84,7 +84,7 @@ func (s *Server) fetch() error {
 		s.tweets[t.ID] = t
 	}
 
-	s.Logger().Printf("fetched Tweets: (%d) %#v", len(s.tweets), s.tweets)
+	s.Logger().Printf("fetched %d tweets", len(s.tweets))
 
 	return nil
 }
@@ -100,14 +100,22 @@ func (s *Server) ping() {
 
 // delete deletes all tweets which are over a day old
 func (s *Server) delete() error {
-	for id, t := range s.tweets {
+	s.Logger().Println(("attempting to delete tweets"))
 
+	var numDeleted int
+	defer func() {
+		if numDeleted > 0 {
+			s.Logger().Printf("deleted %d tweets", numDeleted)
+		}
+	}()
+
+	for id, t := range s.tweets {
 		if time.Since(getTime(t)).Seconds() < float64(86400*365) { // 1 week
 			// tweet is not old enough -- moving to next tweet.
 			continue
 		}
 
-		s.Logger().Printf("Deleting %#v", t)
+		s.Logger().Printf("deleting tweet %d", t.ID)
 		_, _, err := s.Twitter().Statuses.Destroy(t.ID, &twitter.StatusDestroyParams{})
 		if err != nil {
 			fmt.Println("error deleting tweet:", err)
@@ -116,6 +124,7 @@ func (s *Server) delete() error {
 
 		// remove tweet from map
 		delete(s.tweets, id)
+		numDeleted += 1
 	}
 
 	return nil
