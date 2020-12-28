@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+	sentry "github.com/getsentry/sentry-go"
 )
 
 const (
@@ -23,6 +25,7 @@ type IFace interface {
 	MaxAge() float64
 	Port() string
 	Name() string
+	Sentry() *sentry.Client
 }
 
 // Config holds and exposes all configurable and global objects and
@@ -30,11 +33,15 @@ type IFace interface {
 type Config struct {
 	log *log.Logger
 
-	client  *http.Client
-	port    string
-	name    string
-	maxAge  float64
-	twitter *twitter.Client
+	client    *http.Client
+	port      string
+	name      string
+	maxAge    float64
+	twitter   *twitter.Client
+	sentryDSN string
+
+	sentryOnce   sync.Once
+	sentryClient *sentry.Client
 }
 
 // New instantiates an instance of Config.
@@ -52,6 +59,11 @@ func New() *Config {
 		log.Fatalln("!! $HEROKU_NAME not set !!")
 	}
 
+	sentryDSN := os.Getenv("SENTRY_DSN")
+	if sentryDSN == "" {
+		log.Fatalln("!! $SENTRY_DSN not set !!")
+	}
+
 	var maxAge float64
 
 	maxAgeStr := os.Getenv("TWEETSTORIES_MAX_AGE")
@@ -66,12 +78,13 @@ func New() *Config {
 	}
 
 	return &Config{
-		log:     log.New(os.Stdout, "", log.LstdFlags),
-		client:  client,
-		port:    addr,
-		name:    name,
-		maxAge:  maxAge,
-		twitter: twitter.NewClient(client),
+		log:       log.New(os.Stdout, "", log.LstdFlags),
+		client:    client,
+		port:      addr,
+		name:      name,
+		maxAge:    maxAge,
+		sentryDSN: sentryDSN,
+		twitter:   twitter.NewClient(client),
 	}
 }
 
@@ -93,6 +106,23 @@ func (c *Config) Port() string {
 // Name exposes the name of the app
 func (c *Config) Name() string {
 	return c.name
+}
+
+func (c *Config) Sentry() *sentry.Client {
+	c.sentryOnce.Do(func() {
+		sentryClient, err := sentry.NewClient(sentry.ClientOptions{
+			Dsn: c.sentryDSN,
+		},
+		)
+
+		if err != nil {
+			log.Fatal("error creating sentry client: ", err)
+		}
+
+		c.sentryClient = sentryClient
+	})
+
+	return c.sentryClient
 }
 
 // MaxAge exposes the maximum age of a tweet in terms of delta.

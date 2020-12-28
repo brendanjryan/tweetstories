@@ -10,6 +10,7 @@ import (
 
 	"github.com/brendanjryan/tweetstories/config"
 	"github.com/dghubble/go-twitter/twitter"
+	"github.com/getsentry/sentry-go"
 )
 
 // Server is the main app server.
@@ -56,14 +57,16 @@ func (s *Server) Run() error {
 
 	s.delete()
 
+	var err error
 	for true {
 		select {
 		case <-min:
 			go s.ping()
-			// TODO - handle retweets
-			s.delete()
+			err = s.delete()
+			sentry.CaptureException(err)
 		case <-hour:
-			s.fetch()
+			err = s.fetch()
+			sentry.CaptureException(err)
 		case <-kill:
 			s.Logger().Println("Server killed")
 			return s.http.Shutdown(context.Background())
@@ -119,6 +122,7 @@ func (s *Server) delete() error {
 		_, _, err := s.Twitter().Statuses.Destroy(t.ID, &twitter.StatusDestroyParams{})
 		if err != nil {
 			fmt.Println("error deleting tweet:", err)
+			sentry.CaptureException(err)
 			continue
 		}
 
