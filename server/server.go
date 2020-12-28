@@ -84,7 +84,7 @@ func (s *Server) fetch() error {
 		s.tweets[t.ID] = t
 	}
 
-	s.Logger().Printf("fetched Tweets: (%i) %#v", len(s.tweets), s.tweets)
+	s.Logger().Printf("fetched Tweets: (%d) %#v", len(s.tweets), s.tweets)
 
 	return nil
 }
@@ -123,7 +123,6 @@ func (s *Server) delete() error {
 
 func ack(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ack"))
-	return
 }
 
 func getTime(t twitter.Tweet) time.Time {
