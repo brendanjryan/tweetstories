@@ -110,7 +110,7 @@ func (s *Server) delete() error {
 	}()
 
 	for id, t := range s.tweets {
-		if time.Since(getTime(t)).Seconds() < float64(86400*182) { // 6 months
+		if time.Since(getTime(t)).Seconds() < float64(s.MaxAge()) { // 6 months
 			// tweet is not old enough -- moving to next tweet.
 			continue
 		}

@@ -5,15 +5,22 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+)
+
+const (
+	// 6 months in seconds
+	defaultMaxAge = float64(86400 * 18)
 )
 
 // IFace defines all functilnality provided by the config package.
 type IFace interface {
 	Logger() *log.Logger
 	Twitter() *twitter.Client
+	MaxAge() float64
 	Port() string
 	Name() string
 }
@@ -26,6 +33,7 @@ type Config struct {
 	client  *http.Client
 	port    string
 	name    string
+	maxAge  float64
 	twitter *twitter.Client
 }
 
@@ -44,11 +52,25 @@ func New() *Config {
 		log.Fatalln("!! $HEROKU_NAME not set !!")
 	}
 
+	var maxAge float64
+
+	maxAgeStr := os.Getenv("TWEETSTORIES_MAX_AGE")
+
+	if maxAgeStr == "" {
+		maxAge = defaultMaxAge
+	} else {
+		maxAge, err := time.ParseDuration(maxAgeStr)
+		if err != nil {
+			log.Fatalln("unable to parse max age: ", maxAge, err)
+		}
+	}
+
 	return &Config{
 		log:     log.New(os.Stdout, "", log.LstdFlags),
 		client:  client,
 		port:    addr,
 		name:    name,
+		maxAge:  maxAge,
 		twitter: twitter.NewClient(client),
 	}
 }
@@ -71,6 +93,11 @@ func (c *Config) Port() string {
 // Name exposes the name of the app
 func (c *Config) Name() string {
 	return c.name
+}
+
+// MaxAge exposes the maximum age of a tweet in terms of delta.
+func (c *Config) MaxAge() float64 {
+	return c.maxAge
 }
 
 func determineListenAddress() (string, error) {
