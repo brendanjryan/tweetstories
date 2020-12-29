@@ -10,7 +10,7 @@ import (
 
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
-	sentry "github.com/getsentry/sentry-go"
+	"github.com/getsentry/sentry-go"
 )
 
 const (
